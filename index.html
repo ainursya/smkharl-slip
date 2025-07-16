@@ -27,7 +27,7 @@
       padding: 0;
     }
     li {
-      display: none; /* hide by default */
+      display: none;
       margin-top: 10px;
     }
     li.show {
@@ -36,13 +36,20 @@
     .note {
       font-size: 14px;
       color: #555;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: none;
     }
   </style>
 </head>
 <body>
   <h2>Search Student Result Slip by IC Number</h2>
   <p class="note">Please enter the full IC number without dashes (e.g., <strong>120105110190</strong>).</p>
+  <p class="error" id="errorMsg">Please enter a full IC number (12 digits).</p>
 
   <form id="searchForm">
     <input type="text" id="search" placeholder="Enter full IC number">
@@ -59,10 +66,21 @@
     const form = document.getElementById('searchForm');
     const input = document.getElementById('search');
     const listItems = document.querySelectorAll('#pdfList li');
+    const errorMsg = document.getElementById('errorMsg');
 
     form.addEventListener('submit', function(e) {
-      e.preventDefault(); // prevent page reload
-      const query = input.value.trim().toLowerCase().replace(/-/g, '');
+      e.preventDefault();
+      const queryRaw = input.value.trim().replace(/-/g, '');
+      const query = queryRaw.toLowerCase();
+
+      // Show error if not exactly 12 digits
+      if (!/^\d{12}$/.test(query)) {
+        errorMsg.style.display = 'block';
+        listItems.forEach(li => li.classList.remove('show')); // Hide all
+        return;
+      } else {
+        errorMsg.style.display = 'none';
+      }
 
       listItems.forEach(li => {
         const fileName = li.textContent.trim().toLowerCase().replace(/\s+/g, '');
