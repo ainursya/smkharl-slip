@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Result Slips</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    input {
+      width: 70%;
+    }
+    button {
+      width: 25%;
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      display: none; /* hide by default */
+      margin-top: 10px;
+    }
+    li.show {
+      display: list-item;
+    }
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Search Student Result Slip by IC Number</h2>
+  <p class="note">Please enter the full IC number without dashes (e.g., <strong>120105110190</strong>).</p>
+
+  <form id="searchForm">
+    <input type="text" id="search" placeholder="Enter full IC number">
+    <button type="submit">Search</button>
+  </form>
+
+  <ul id="pdfList">
+    <li><a href="120105110190 .pdf" target="_blank">120105110190.pdf</a></li>
+    <li><a href="120106110408 .pdf" target="_blank">120106110408.pdf</a></li>
+    <li><a href="120112110519 .pdf" target="_blank">120112110519.pdf</a></li>
+  </ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('search');
+    const listItems = document.querySelectorAll('#pdfList li');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault(); // prevent page reload
+      const query = input.value.trim().toLowerCase().replace(/-/g, '');
+
+      listItems.forEach(li => {
+        const fileName = li.textContent.trim().toLowerCase().replace(/\s+/g, '');
+        const match = fileName === query || fileName === `${query}.pdf`;
+        li.classList.toggle('show', match);
+      });
+    });
+  </script>
+</body>
+</html>
