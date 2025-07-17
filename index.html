@@ -1,1 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Result Slips</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    input {
+      width: 70%;
+    }
+    button {
+      width: 25%;
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      display: none;
+      margin-top: 10px;
+    }
+    li.show {
+      display: list-item;
+    }
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Carian Slip Keputusan Pelajar dengan Nombor IC</h2>
+  <p class="note">Sila masukkan nombor IC penuh tanpa sengkang (cth: <strong>100102110138</strong>).</p>
+  <p class="error" id="errorMsg">Sila masukkan nombor IC penuh (12 digit).</p>
+
+  <form id="searchForm">
+    <input type="text" id="search" placeholder="Masukkan nombor IC penuh">
+    <button type="submit">Cari</button>
+  </form>
+
+  <ul id="pdfList">
+    <li><a href="100102110138.pdf" target="_blank">100102110138.pdf</a></li>
+    <li><a href="100104110043.pdf" target="_blank">100104110043.pdf</a></li>
+    <li><a href="100108110155.pdf" target="_blank">100108110155.pdf</a></li>
+  </ul>
+
+  <script>
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('search');
+    const listItems = document.querySelectorAll('#pdfList li');
+    const errorMsg = document.getElementById('errorMsg');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const query = input.value.trim().replace(/-/g, '');
+
+      if (!/^\d{12}$/.test(query)) {
+        errorMsg.style.display = 'block';
+        listItems.forEach(li => li.classList.remove('show'));
+        return;
+      } else {
+        errorMsg.style.display = 'none';
+      }
+
+      let matchFound = false;
+
+      listItems.forEach(li => {
+        const href = li.querySelector('a').getAttribute('href').toLowerCase();
+        const isMatch = href === `${query}.pdf`;
+        li.classList.toggle('show', isMatch);
+        if (isMatch) matchFound = true;
+      });
+
+      if (!matchFound) {
+        alert('Maaf, nombor IC tidak dijumpai dalam senarai.');
+      }
+    });
+  </script>
+</body>
+</html>
 
