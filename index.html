@@ -1,1 +1,147 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <title>Carian Slip Keputusan</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 70%;
+    }
+
+    button {
+      width: 25%;
+      cursor: pointer;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    #message {
+      margin-top: 20px;
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    #message.success {
+      color: green;
+      background-color: #e0fbe0;
+      border: 1px solid #86d186;
+    }
+
+    #message.error {
+      color: red;
+      background-color: #ffe0e0;
+      border: 1px solid #e19292;
+    }
+  </style>
+</head>
+<body>
+  <h2>Carian Slip Keputusan Pelajar dengan Nombor IC</h2>
+  <p class="note">Sila masukkan nombor IC penuh tanpa sengkang (contoh: <strong>100102110138</strong>).</p>
+  <p class="error" id="errorMsg">Sila masukkan nombor IC penuh (12 digit).</p>
+
+  <form id="searchForm">
+    <input type="text" id="search" placeholder="Masukkan nombor IC penuh" autocomplete="off">
+    <button type="submit">Cari</button>
+  </form>
+
+  <div id="message"></div>
+
+  <script>
+    let pdfList = [];
+
+    // Muat senarai IC dari JSON
+    fetch('pdf-list.json')
+      .then(response => response.json())
+      .then(data => {
+        pdfList = data;
+      })
+      .catch(error => {
+        console.error("❌ Gagal memuat senarai fail:", error);
+        showMessage("❌ Gagal memuat senarai fail. Sila cuba sebentar lagi.", 'error');
+        document.querySelector('button').disabled = true;
+      });
+
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('search');
+    const errorMsg = document.getElementById('errorMsg');
+    const messageDiv = document.getElementById('message');
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const query = input.value.trim().replace(/-/g, '');
+
+      // Semak panjang IC
+      if (!/^\d{12}$/.test(query)) {
+        errorMsg.style.display = 'block';
+        showMessage('', ''); // Kosongkan mesej
+        return;
+      } else {
+        errorMsg.style.display = 'none';
+      }
+
+      // Semak kewujudan fail
+      if (pdfList.includes(query)) {
+        const fileUrl = `results/${query}.pdf`;
+        const confirmDownload = confirm("Slip berjaya dijumpai.\n\nAdakah anda ingin memuat turun slip ini?");
+        if (confirmDownload) {
+          try {
+            showMessage("📥 Sedang memuat turun slip...", '');
+
+            const response = await fetch(fileUrl);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${query}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+
+            showMessage(`✅ Slip untuk <strong>${query}</strong> telah berjaya dimuat turun.`, 'success');
+          } catch (err) {
+            showMessage(`❌ Gagal memuat turun fail untuk <strong>${query}</strong>.`, 'error');
+          }
+        } else {
+          showMessage(`✅ Slip dijumpai untuk <strong>${query}</strong>. Tiada muat turun dilakukan.`, 'success');
+        }
+      } else {
+        showMessage(`❌ Slip keputusan untuk <strong>${query}</strong> tidak dijumpai.`, 'error');
+      }
+    });
+
+    // Fungsi paparan mesej
+    function showMessage(msg, type) {
+      messageDiv.className = type ? type : '';
+      messageDiv.innerHTML = msg;
+    }
+  </script>
+</body>
+</html>
 
