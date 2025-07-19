@@ -1,1 +1,187 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <title>Carian Slip Keputusan</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 70%;
+    }
+
+    button {
+      width: 25%;
+      cursor: pointer;
+    }
+
+    .note {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    #message {
+      margin-top: 20px;
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    #message.success {
+      color: green;
+      background-color: #e6fce6;
+      border: 1px solid #99dd99;
+    }
+
+    #message.error {
+      color: red;
+      background-color: #ffe0e0;
+      border: 1px solid #e19292;
+    }
+
+    #openBtn {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+
+    #openBtn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>Carian Slip Keputusan Pelajar dengan Nombor IC</h2>
+  <p class="note">Sila masukkan nombor IC penuh tanpa sengkang (contoh: <strong>100102110138</strong>).</p>
+  <p class="error" id="errorMsg">Sila masukkan nombor IC penuh (12 digit).</p>
+  <p class="error" id="notFoundMsg">Slip keputusan tidak dijumpai.</p>
+
+  <form id="searchForm">
+    <input type="text" id="search" placeholder="Masukkan nombor IC penuh">
+    <button type="submit">Cari</button>
+  </form>
+
+  <div id="message"></div>
+  <button id="openBtn">Buka Slip</button>
+
+  <script>
+    let pdfList = [];
+    let lastBlobUrl = null; // Simpan blob untuk "Buka Slip"
+
+    fetch('pdf-list.json')
+      .then(response => response.json())
+      .then(data => {
+        pdfList = data;
+      })
+      .catch(error => {
+        console.error("❌ Gagal memuat senarai fail:", error);
+        showMessage("❌ Gagal memuat senarai fail.", "error");
+        document.querySelector('button').disabled = true;
+      });
+
+    const form = document.getElementById('searchForm');
+    const input = document.getElementById('search');
+    const errorMsg = document.getElementById('errorMsg');
+    const notFoundMsg = document.getElementById('notFoundMsg');
+    const messageDiv = document.getElementById('message');
+    const openBtn = document.getElementById('openBtn');
+
+    input.addEventListener('input', () => {
+      errorMsg.style.display = 'none';
+      notFoundMsg.style.display = 'none';
+      clearMessage();
+      openBtn.style.display = 'none';
+    });
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const query = input.value.trim().replace(/-/g, '');
+
+      if (!/^\d{12}$/.test(query)) {
+        errorMsg.style.display = 'block';
+        notFoundMsg.style.display = 'none';
+        clearMessage();
+        openBtn.style.display = 'none';
+        return;
+      } else {
+        errorMsg.style.display = 'none';
+      }
+
+      if (pdfList.includes(query)) {
+        notFoundMsg.style.display = 'none';
+        const fileUrl = `results/${query}.pdf`;
+        const confirmDownload = confirm("Slip berjaya dijumpai.\n\nAdakah anda ingin memuat turun slip ini?");
+        if (confirmDownload) {
+          try {
+            const response = await fetch(fileUrl);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            lastBlobUrl = blobUrl;
+
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${query}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showMessage(`✅ Slip untuk <strong>${query}</strong> telah berjaya dimuat turun.`, "success");
+            openBtn.style.display = 'inline-block';
+          } catch (err) {
+            showMessage(`❌ Gagal memuat turun fail untuk <strong>${query}</strong>.`, "error");
+            openBtn.style.display = 'none';
+          }
+        } else {
+          showMessage(`✅ Slip dijumpai untuk <strong>${query}</strong>. Tiada muat turun dilakukan.`, "success");
+          openBtn.style.display = 'none';
+        }
+      } else {
+        notFoundMsg.style.display = 'block';
+        clearMessage();
+        openBtn.style.display = 'none';
+      }
+    });
+
+    openBtn.addEventListener('click', () => {
+      if (lastBlobUrl) {
+        window.open(lastBlobUrl, '_blank');
+      }
+    });
+
+    function showMessage(message, type) {
+      messageDiv.innerHTML = message;
+      messageDiv.className = type;
+    }
+
+    function clearMessage() {
+      messageDiv.innerHTML = '';
+      messageDiv.className = '';
+    }
+  </script>
+</body>
+</html>
 
