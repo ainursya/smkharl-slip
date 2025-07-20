@@ -10,6 +10,12 @@
 <body class="bg-light d-flex align-items-center justify-content-center vh-100">
 
   <div class="card shadow-lg p-4" style="width: 100%; max-width: 500px;">
+
+    <!-- ✅ Logo Sekolah di dalam kad, atas tajuk -->
+    <div class="text-center mb-3">
+      <img src="logo-sekolah.png" alt="Logo Sekolah" style="max-height: 80px;">
+    </div>
+
     <h4 class="text-center mb-3">Carian Slip Keputusan Pelajar</h4>
     <p class="text-muted text-center small">
       Masukkan nombor IC penuh tanpa (-)<br>
@@ -33,9 +39,10 @@
     <button id="openBtn" class="btn btn-success btn-sm w-100 mt-2 d-none">Buka Slip</button>
   </div>
 
-  <!-- ✅ Bootstrap JS (optional) -->
+  <!-- ✅ Bootstrap JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+  <!-- ✅ Script -->
   <script>
     let pdfList = [];
     let lastBlobUrl = null;
@@ -129,4 +136,3 @@
   </script>
 </body>
 </html>
-
